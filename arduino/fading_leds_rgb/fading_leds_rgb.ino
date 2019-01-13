@@ -6,10 +6,10 @@
 // number of LEDs
 const int GROUPS_COUNT = 3;
 // pins that these LEDs are connected to
-const int pins[3][2] = 
-{{3, 5},
-		      {6, 9},
-		      {10, 11}};
+const int groups[3][2] = 
+  {{3, 5},
+   {6, 9},
+   {10, 11}};
 
 // value output to the pin
 int values[GROUPS_COUNT];
@@ -18,15 +18,15 @@ int deltas[GROUPS_COUNT];
 
 void setGroup(int group, int value) {
   values[group] = value;
-  analogWrite(pins[group][0], value);
-  analogWrite(pins[group][1], value);
+  analogWrite(groups[group][0], value);
+  analogWrite(groups[group][1], value);
 }
 
 void setup() {
   // put your setup code here, to run once:
   for (int i = 0; i < GROUPS_COUNT; ++i) {
-    pinMode(pins[i][0], OUTPUT);
-    pinMode(pins[i][1], OUTPUT);
+    pinMode(groups[i][0], OUTPUT);
+    pinMode(groups[i][1], OUTPUT);
     setGroup(i, 205);
     deltas[i] = 5 + random(5);
     delay(500);
