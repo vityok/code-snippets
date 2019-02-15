@@ -1,0 +1,9 @@
+* A vector of unique pointers
+
+
+What is the correct way to add new elements to a vector of unique
+pointers?
+
+ - a) =push_back(std::move(ptr))=
+ - b) =emplace_back(std::move(ptr))=
+ - c) (bonus) use =std::move(begin(), end(), back_inserter())= when adding new elements to an existing vector from another vector
