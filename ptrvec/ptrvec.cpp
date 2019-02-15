@@ -6,26 +6,27 @@
 
 int square(int num)
 {
-    std::unique_ptr<int> upr(new int);
+    std::vector<std::unique_ptr<int>> vec;
 
-    std::vector<std::unique_ptr<int>> vec(10);
-    for (auto i = 0; i < vec.size(); ++i) {
+    for (auto i = 0; i < 10; ++i) {
         auto tmp = std::make_unique<int>(i);
         vec.push_back(std::move(tmp));
     }
+
     for (auto i = 0; i < vec.size(); ++i) {
-	std::cout << *vec[i] << " ";
+	std::cout << *(vec[i]) << ", ";
     }
     std::cout << std::endl;
+
     return num * num;
 }
 
 int main()
 {
-    square(10);
+    std::cout << square(10) << std::endl;
     return 0;
 }
 
-// g++ -o ptrvec ptrvec.cpp
-// clang -o ptrvec ptrvec.cpp
+// g++ -Wall -pedantic -o ptrvec -std=c++14 ptrvec.cpp
+// clang -o ptrvec -std=c++14 ptrvec.cpp
 
