@@ -58,6 +58,38 @@ append_emplacing      25524 ns        25532 ns        26665
 append_moving         17993 ns        17993 ns        39321
 #+END_SRC
 
+Update: legitimate usage of emplace_back for storing complex data types directly in the vector.
+
+#+BEGIN_SRC
+./ptrvec  --benchmark_repetitions=10 --benchmark_report_aggregates_only=true
+2019-02-16 17:14:51
+Running ./ptrvec
+Run on (4 X 3200 MHz CPU s)
+CPU Caches:
+  L1 Data 32K (x2)
+  L1 Instruction 32K (x2)
+  L2 Unified 256K (x2)
+  L3 Unified 3072K (x1)
+Load Average: 0.24, 0.26, 0.17
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+----------------------------------------------------------------------
+Benchmark                            Time             CPU   Iterations
+----------------------------------------------------------------------
+append_pushing_mean              54531 ns        54532 ns           10
+append_pushing_median            54439 ns        54440 ns           10
+append_pushing_stddev              493 ns          493 ns           10
+append_emplacing_ptr_mean        54464 ns        54464 ns           10
+append_emplacing_ptr_median      54584 ns        54579 ns           10
+append_emplacing_ptr_stddev        544 ns          544 ns           10
+append_moving_ptr_mean           49850 ns        49852 ns           10
+append_moving_ptr_median         50015 ns        50017 ns           10
+append_moving_ptr_stddev           995 ns          995 ns           10
+append_moving_str_mean            4367 ns         4367 ns           10
+append_moving_str_median          4342 ns         4342 ns           10
+append_moving_str_stddev          63.3 ns         63.3 ns           10
+#+END_SRC
+
+
 * Conclusion
 
 There are two methods to append new elements to a vector: emplace_back
@@ -85,3 +117,20 @@ parameters.
 As to the performance, at least on fairly large vectors (up to 1M
 elements) the biggest performance boost comes from pre-allocating
 memory by using reserve() method.
+
+P.S. However, there is really a very legitimate use case for
+emplace_back that has been overlooked: storing objects directly in the
+vector.
+
+For example, use std::vector<Point> instead of std::vector<std::unique_ptr<Point>>.
+
+This approach delivers an order of magnitude performance improvement
+on a simple microbenchmark, and obviously causes less memory
+fragmentation, memory usage, and overall system resources.
+
+* Summary
+
+ - better to =push_back(unique_ptr)=, but =emplace_back(unique_ptr)=
+   is also legit
+ - storing objects in a vector might be much more efficent than
+   storing pointers that's what =emplace_back= has been designed to do.
