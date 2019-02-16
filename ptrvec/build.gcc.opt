@@ -1,0 +1,10 @@
+-Wall
+-pedantic
+-O2
+-std=c++14
+-I/home/victor/local/google-benchmark/benchmark/include
+-pthread
+-o ptrvec ptrvec.cpp
+-Bstatic
+/home/victor/local/google-benchmark/build/lib/libgtest.a
+/home/victor/local/google-benchmark/build/src/libbenchmark.a

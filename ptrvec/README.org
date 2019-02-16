@@ -6,4 +6,82 @@ pointers?
 
  - a) =push_back(std::move(ptr))=
  - b) =emplace_back(std::move(ptr))=
- - c) (bonus) use =std::move(begin(), end(), back_inserter())= when adding new elements to an existing vector from another vector
+ - c) (bonus) use =std::move(begin(), end(), back_inserter())= when
+   adding new elements to an existing vector from another vector
+
+* Benchmark results
+
+Benchmark results are inconclusive and show no consistent benefit of
+one approach over another in this kind of a test:
+
+#+BEGIN_SRC
+2019-02-16 12:12:17
+Running ./ptrvec
+Run on (4 X 3200 MHz CPU s)
+CPU Caches:
+  L1 Data 32K (x2)
+  L1 Instruction 32K (x2)
+  L2 Unified 256K (x2)
+  L3 Unified 3072K (x1)
+Load Average: 0.49, 0.37, 0.36
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+-----------------------------------------------------------
+Benchmark                 Time             CPU   Iterations
+-----------------------------------------------------------
+append_pushing        54561 ns        54561 ns        12313
+append_emplacing      55735 ns        55737 ns        12955
+append_moving         54205 ns        54207 ns        12475
+
+#+END_SRC
+
+The only significant performance improvement is gained by reserving
+sufficient amount of memory in a vector before pushing/emplacing new
+elements into it. With additional modifications and improvements the
+test with memory pre-allocation is easy to spot:
+
+#+BEGIN_SRC
+2019-02-16 13:20:25
+Running ./ptrvec
+Run on (4 X 3200 MHz CPU s)
+CPU Caches:
+  L1 Data 32K (x2)
+  L1 Instruction 32K (x2)
+  L2 Unified 256K (x2)
+  L3 Unified 3072K (x1)
+Load Average: 0.40, 0.16, 0.06
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+-----------------------------------------------------------
+Benchmark                 Time             CPU   Iterations
+-----------------------------------------------------------
+append_pushing        25831 ns        25836 ns        26326
+append_emplacing      25524 ns        25532 ns        26665
+append_moving         17993 ns        17993 ns        39321
+#+END_SRC
+
+* Conclusion
+
+There are two methods to append new elements to a vector: emplace_back
+and push_back. Emplace_back constructs a new element in place, and
+push_back copies (or in our case) moves a new element into an
+allocated vector data buffer.
+
+However, since we are calling emplace_back with std::move-created
+rvalue, the underlying code will call unique_ptr move constructor,
+which, one would expect, is similar to the move assignment operator
+and therefore is the one used by the push_back method anyway.
+
+Microbenchmarking (on GCC 5.4.0, Ubuntu) all three approaches for
+adding new unique_ptr elements to a vector (push_back, emplace_back,
+and move(beg,end,dst)) shows no performance difference, further
+proving that in fact there is no significant difference in their
+implementation (at least in the case of adding unique_ptr elements by
+their rvalues).
+
+The difference, however, is that both push_back and emplace_back imply
+different meanings: one is used to add an existing element to a
+vector, while another is used to create a new element given specific
+parameters.
+
+As to the performance, at least on fairly large vectors (up to 1M
+elements) the biggest performance boost comes from pre-allocating
+memory by using reserve() method.
